@@ -15,6 +15,26 @@ $builder_is_enabled = ! file_exists($dolibasedir.'/builder/.htaccess');
 	</tr>
 	<?php } ?>
 	<tr>
+		<td align="left"><?php echo $langs->trans('DisableAutoCheckForUpdates'); ?></td>
+		<td align="right">
+			<?php if ($conf->global->DOLIBASE_DISABLE_CHECK_FOR_UPDATES) { ?>
+				<a href="<?php echo $_SERVER['PHP_SELF'].'?action=del_DOLIBASE_DISABLE_CHECK_FOR_UPDATES'; ?>"><?php echo img_picto($langs->trans("Enabled"), 'switch_on'); ?></a>
+			<?php } else { ?>
+				<a href="<?php echo $_SERVER['PHP_SELF'].'?action=set_DOLIBASE_DISABLE_CHECK_FOR_UPDATES'; ?>"><?php echo img_picto($langs->trans("Disabled"), 'switch_off'); ?></a>
+			<?php } ?>
+		</td>
+	</tr>
+	<tr>
+		<td align="left"><?php echo $langs->trans('EnableExpAndDevModules'); ?></td>
+		<td align="right">
+			<?php if ($conf->global->MAIN_FEATURES_LEVEL == '2') { ?>
+				<a href="<?php echo $_SERVER['PHP_SELF'].'?action=set_MAIN_FEATURES_LEVEL&MAIN_FEATURES_LEVEL=0'; ?>"><?php echo img_picto($langs->trans("Enabled"), 'switch_on'); ?></a>
+			<?php } else { ?>
+				<a href="<?php echo $_SERVER['PHP_SELF'].'?action=set_MAIN_FEATURES_LEVEL&MAIN_FEATURES_LEVEL=2'; ?>"><?php echo img_picto($langs->trans("Disabled"), 'switch_off'); ?></a>
+			<?php } ?>
+		</td>
+	</tr>
+	<tr>
 		<td align="left"><?php echo $langs->trans('EnableDolibaseInstallLock'); ?></td>
 		<td align="right">
 			<?php if ($conf->global->DOLIBASE_INSTALL_LOCK) { ?>

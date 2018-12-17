@@ -8,6 +8,8 @@
 DolibaseInstaller = Dolibase Installer
 DolibaseInstallerDescription = Dolibase Framework installer/uninstaller
 DolibaseIsInstalledInto = Dolibase Framework is installed into directory: <strong>%s</strong>
+DisableAutoCheckForUpdates = Disable automatic check for module updates
+EnableExpAndDevModules = Enable experimental & development modules
 EnableDolibaseInstallLock = Enable Dolibase install lock (this option lock/disable framework updates, use it wisely)
 EnableDolibaseBuilder = Enable Dolibase builder (think to disable builder when you don't need it for safety)
 OpenDolibaseBuilder = Open Dolibase Builder
