@@ -1,0 +1,5 @@
+# ${module_name} MODULE - ${translation_name}
+#
+# Copyright (C) ${current_year} ${author_name}
+
+${translation_strings}

@@ -1,0 +1,13 @@
+# DOLIBASEINSTALLER MODULE - fr_FR
+#
+# Copyright (C) 2018 AXeL
+
+#
+# Générique
+#
+DolibaseInstaller = Dolibase Installer
+DolibaseInstallerDescription = Module officiel d'installation / désinstallation du Framework Dolibase
+DolibaseIsInstalledInto = Le Framework Dolibase est installé dans le dossier: <strong>%s</strong>
+EnableDolibaseInstallLock = Activer le verrouillage d'installation Dolibase (cette option verrouille / désactive les mises à jour du framework, utilisez-la judicieusement)
+EnableDolibaseBuilder = Activer le générateur de module Dolibase (pensez à désactiver le générateur lorsque vous n'en avez plus besoin pour des raisons de sécurité)
+OpenDolibaseBuilder = Accéder au générateur de module

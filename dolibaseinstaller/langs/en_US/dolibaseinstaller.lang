@@ -1,0 +1,13 @@
+# DOLIBASEINSTALLER MODULE - en_US
+#
+# Copyright (C) 2018 AXeL
+
+#
+# Generic
+#
+DolibaseInstaller = Dolibase Installer
+DolibaseInstallerDescription = Dolibase Framework installer/uninstaller
+DolibaseIsInstalledInto = Dolibase Framework is installed into directory: <strong>%s</strong>
+EnableDolibaseInstallLock = Enable Dolibase install lock (this option lock/disable framework updates, use it wisely)
+EnableDolibaseBuilder = Enable Dolibase builder (think to disable builder when you don't need it for safety)
+OpenDolibaseBuilder = Open Dolibase Builder
