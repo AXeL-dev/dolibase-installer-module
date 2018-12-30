@@ -82,7 +82,7 @@
 				<small id="pictureHelp" class="form-text text-muted">preferred size (128 x 128)</small>
 			</div>
 			<div class="form-group form-check">
-				<input type="checkbox" class="form-check-input" id="check_updates" name="check_updates">
+				<input type="checkbox" class="form-check-input" id="check_updates" name="check_updates" checked>
 				<label class="form-check-label" for="check_updates">Enable check for module updates</label>
 			</div>
 			<div class="form-group form-check">
@@ -91,7 +91,11 @@
 			</div>
 			<div class="form-group form-check">
 				<input type="checkbox" class="form-check-input" id="enable_triggers" name="enable_triggers">
-				<label class="form-check-label" for="enable_logs">Enable triggers</label>
+				<label class="form-check-label" for="enable_triggers">Enable triggers</label>
+			</div>
+			<div class="form-group form-check">
+				<input type="checkbox" class="form-check-input" id="enable_for_external_users" name="enable_for_external_users">
+				<label class="form-check-label" for="enable_for_external_users">Enable for external users</label>
 			</div>
 			<div class="form-group form-check">
 				<input type="checkbox" class="form-check-input" id="use_custom_class" name="use_custom_class">
@@ -180,6 +184,11 @@
 				<input type="checkbox" class="form-check-input" id="add_extrafields_page" name="add_extrafields_page">
 				<label class="form-check-label" for="add_extrafields_page" aria-describedby="addExtrafieldsPageHelp">Add extrafields page</label>
 				<small id="addExtrafieldsPageHelp" class="form-text text-muted">adds also an extrafields table into sql folder</small>
+			</div>
+			<div class="form-group form-check">
+				<input type="checkbox" class="form-check-input" id="add_changelog_page" name="add_changelog_page" checked>
+				<label class="form-check-label" for="add_changelog_page" aria-describedby="addChangelogPageHelp">Add changelog page</label>
+				<small id="addChangelogPageHelp" class="form-text text-muted">adds also a changelog.json file into module folder</small>
 			</div>
 		</div>
 

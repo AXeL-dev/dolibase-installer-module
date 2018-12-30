@@ -182,7 +182,7 @@ class DolibaseModule extends DolibarrModules
 				// If a new version is available
 				if (isset($module_version[1]) && compare_version($module_version[1], '>', $this->config['module']['version']))
 				{
-					$this->version .= ' <a href="'.$this->config['module']['url'].'" title="'.$langs->trans('NewVersionAvailable', $module_version[1]).'" target="_blank"><img src="'.dolibase_buildurl('/core/img/update.png').'" class="valignmiddle" width="24" alt="'.$module_version[1].'"></a>';
+					$this->version .= ' <a href="'.$this->config['module']['url'].'" title="'.$langs->trans('NewVersionAvailable', $module_version[1]).'" target="_blank"><img src="'.dolibase_buildurl('core/img/update.png').'" class="valignmiddle" width="24" alt="'.$module_version[1].'"></a>';
 				}
 			}
 		}
@@ -209,7 +209,53 @@ class DolibaseModule extends DolibarrModules
 		// Set addons
 		$this->setAddons();
 
+		// Enable module for external users
+		if (isset($this->config['module']['enable_for_external_users']) && $this->config['module']['enable_for_external_users']) {
+			$this->enableModuleForExternalUsers($this->config['module']['rights_class']);
+		}
+
 		return $this->_init($sql, $options);
+	}
+
+	/**
+	 * Enable module for external users
+	 *
+	 * @param     $module_rights_class     Module rights class
+	 */
+	protected function enableModuleForExternalUsers($module_rights_class)
+	{
+		global $conf;
+
+		if (empty($conf->global->MAIN_MODULES_FOR_EXTERNAL) || strpos($conf->global->MAIN_MODULES_FOR_EXTERNAL, $module_rights_class) === false) {
+			$value = empty($conf->global->MAIN_MODULES_FOR_EXTERNAL) ? $module_rights_class : join(',', array($conf->global->MAIN_MODULES_FOR_EXTERNAL, $module_rights_class));
+			dolibarr_set_const($this->db, 'MAIN_MODULES_FOR_EXTERNAL', $value, 'chaine', 1, '', $conf->entity);
+		}
+	}
+
+	/**
+	 * Disable module for external users
+	 *
+	 * @param     $module_rights_class     Module rights class
+	 */
+	protected function disableModuleForExternalUsers($module_rights_class)
+	{
+		global $conf;
+
+		if (! empty($conf->global->MAIN_MODULES_FOR_EXTERNAL)) {
+			$modules_list = explode(',', $conf->global->MAIN_MODULES_FOR_EXTERNAL);
+			$found = false;
+			foreach ($modules_list as $key => $value)
+			{
+				if ($value == $module_rights_class) {
+					unset($modules_list[$key]);
+					$found = true;
+				}
+			}
+			if ($found) {
+				$value = empty($modules_list) ? '' : join(',', $modules_list);
+				dolibarr_set_const($this->db, 'MAIN_MODULES_FOR_EXTERNAL', $value, 'chaine', 1, '', $conf->entity);
+			}
+		}
 	}
 
 	/**
@@ -267,6 +313,11 @@ class DolibaseModule extends DolibarrModules
 	public function remove($options = '')
 	{
 		$sql = array();
+
+		// Disable module for external users
+		if (isset($this->config['module']['enable_for_external_users']) && ! $this->config['module']['enable_for_external_users']) {
+			$this->disableModuleForExternalUsers($this->config['module']['rights_class']);
+		}
 
 		return $this->_remove($sql, $options);
 	}

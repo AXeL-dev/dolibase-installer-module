@@ -34,6 +34,7 @@ if ($action == 'generate')
 	$add_generic_left_menu = getPostData('add_generic_left_menu');
 	$add_crud_perms = getPostData('add_crud_perms');
 	$add_extrafields_page = getPostData('add_extrafields_page');
+	$add_changelog_page = getPostData('add_changelog_page');
 	$add_num_models_settings = getPostData('add_num_models_settings');
 	$add_doc_models_settings = getPostData('add_doc_models_settings');
 	$data = array(
@@ -50,6 +51,7 @@ if ($action == 'generate')
 		'check_updates' => bool2Alpha(getPostData('check_updates')),
 		'enable_logs' => bool2Alpha(getPostData('enable_logs')),
 		'enable_triggers' => bool2Alpha(getPostData('enable_triggers')),
+		'enable_for_external_users' => bool2Alpha(getPostData('enable_for_external_users')),
 		'author_name' => getPostData('author_name'),
 		'author_url' => getPostData('author_url'),
 		'author_email' => getPostData('author_email'),
@@ -71,7 +73,8 @@ if ($action == 'generate')
 		'img',
 		'langs/en_US',
 		'langs/fr_FR',
-		'sql'
+		'sql',
+		'tpl'
 	);
 
 	if (! mkdir_r($module_sub_folders, 0777, $module_path))
@@ -106,6 +109,7 @@ if ($action == 'generate')
 		// Create setup page
 		$setup_data = array(
 			'add_extrafields_tab' => bool2Alpha($add_extrafields_page),
+			'add_changelog_tab' => bool2Alpha($add_changelog_page),
 			'settings' => ($add_num_models_settings || $add_doc_models_settings ? '' : '$page->setupNotAvailable();')
 		);
 		if ($add_num_models_settings) {
@@ -129,6 +133,7 @@ if ($action == 'generate')
 		// Create about page
 		$about_data = array(
 			'add_extrafields_tab' => $setup_data['add_extrafields_tab'],
+			'add_changelog_tab' => $setup_data['add_changelog_tab'],
 			'picture' => $data['picture']
 		);
 		$about_template = getTemplate(__DIR__ . '/tpl/module/about.php', $about_data);
@@ -137,7 +142,11 @@ if ($action == 'generate')
 		// Create extrafields page
 		if ($add_extrafields_page) {
 			$element_type = sanitizeString(strtolower($module_name));
-			$extrafields_template = getTemplate(__DIR__ . '/tpl/module/extrafields.php', array('element_type' => $element_type));
+			$extrafields_data = array(
+				'element_type' => $element_type,
+				'add_changelog_tab' => $setup_data['add_changelog_tab']
+			);
+			$extrafields_template = getTemplate(__DIR__ . '/tpl/module/extrafields.php', $extrafields_data);
 			file_put_contents($module_path.'/admin/extrafields.php', $extrafields_template);
 			// Create extrafields table
 			$extrafields_table_data = array(
@@ -151,12 +160,28 @@ if ($action == 'generate')
 			file_put_contents($module_path.'/sql/llx_'.$extrafields_table_data['table_name'].'.key.sql', $extrafields_key_sql_template);
 		}
 
+		// Create changelog page
+		if ($add_changelog_page) {
+			$changelog_data = array(
+				'add_extrafields_tab' => $setup_data['add_extrafields_tab']
+			);
+			$changelog_template = getTemplate(__DIR__ . '/tpl/module/changelog.php', $changelog_data);
+			file_put_contents($module_path.'/admin/changelog.php', $changelog_template);
+			// Create changelog.json file
+			$changelog_json_data = array(
+				'version' => $data['version'],
+				'current_date' => date('Y/m/d')
+			);
+			$changelog_json_template = getTemplate(__DIR__ . '/tpl/module/changelog.json', $changelog_json_data);
+			file_put_contents($module_path.'/changelog.json', $changelog_json_template);
+		}
+
 		// Create module class
 		$module_class_data = array(
 			'module_folder' => $data['folder'],
 			'module_class_name' => sanitizeString(ucfirst($module_name)),
 			'dolibase_class_name' => 'DolibaseModule',
-			'dolibase_class_include' => "dolibase_include_once('/core/class/module.php');",
+			'dolibase_class_include' => "dolibase_include_once('core/class/module.php');",
 			'module_settings' => ''
 		);
 		$perms_translation = '';
@@ -206,7 +231,7 @@ if ($action == 'generate')
 					}
 					file_replace_contents($module_path.'/class/module.php', '({\n+)\/\*.*?\*\/\n+(class)', '$1$2', '/', '/s'); // remove class comment
 					file_replace_contents($module_path.'/class/module.php', 'DolibaseModule', $module_class_data['dolibase_class_name']);
-					$module_class_data['dolibase_class_include'] = "dol_include_once('/".$data['folder']."/class/module.php');";
+					$module_class_data['dolibase_class_include'] = "dol_include_once('".$data['folder']."/class/module.php');";
 				}
 			}
 		}
@@ -218,6 +243,7 @@ if ($action == 'generate')
 			'module_name' => strtoupper($module_name),
 			'current_year' => date('Y'),
 			'author_name' => $data['author_name'],
+			'module_name_translation' => 'Module'.$data['number'].'Name = '.$module_name,
 			'permissions_translation' => $perms_translation
 		);
 		$english_template = getTemplate(__DIR__ . '/tpl/module/en_US.lang', $lang_data);

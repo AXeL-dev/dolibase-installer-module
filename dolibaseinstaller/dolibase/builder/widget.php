@@ -73,7 +73,7 @@ if ($action == 'generate')
 		// Create widget class
 		$data['widget_class_name'] = sanitizeString(ucfirst($widget_name));
 		$data['dolibase_class_name'] = 'Widget';
-		$data['dolibase_class_include']  = "dolibase_include_once('/core/class/widget.php');";
+		$data['dolibase_class_include']  = "dolibase_include_once('core/class/widget.php');";
 		if ($use_custom_class) {
 			// Copy widget class into module folder & rename it from Widget to WidgetXXX where XXX represent the current version of dolibase
 			$dolibase_version = getDolibaseVersion($root);
@@ -85,7 +85,7 @@ if ($action == 'generate')
 					}
 					file_replace_contents($module_path.'/class/widget.php', '({\n+)\/\*.*?\*\/\n+(class)', '$1$2', '/', '/s'); // remove class comment
 					file_replace_contents($module_path.'/class/widget.php', 'Widget', $data['dolibase_class_name']);
-					$data['dolibase_class_include'] = "dol_include_once('/".$data['module_folder']."/class/widget.php');";
+					$data['dolibase_class_include'] = "dol_include_once('".$data['module_folder']."/class/widget.php');";
 				}
 			}
 		}
