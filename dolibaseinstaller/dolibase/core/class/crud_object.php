@@ -75,10 +75,13 @@ abstract class CrudObject extends CommonObject
 	 * Set table name
 	 * 
 	 * @param  $table_name  table name
+	 * @return $this
 	 */
 	public function setTableName($table_name)
 	{
 		$this->table_element = $table_name;
+
+		return $this;
 	}
 
 	/**
@@ -229,7 +232,7 @@ abstract class CrudObject extends CommonObject
 		}
 
 		// SELECT request
-		$sql = "SELECT ";
+		$sql = "SELECT DISTINCT ";
 		foreach ($this->fetch_fields as $field) {
 			$sql.= "`" . $field . "`,";
 		}
