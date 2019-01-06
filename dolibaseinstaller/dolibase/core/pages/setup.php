@@ -17,6 +17,7 @@
 
 dolibase_include_once('core/class/form_page.php');
 require_once DOL_DOCUMENT_ROOT . '/core/lib/admin.lib.php';
+require_once DOL_DOCUMENT_ROOT . '/core/lib/ajax.lib.php';
 
 /**
  * SetupPage class
@@ -72,6 +73,10 @@ class SetupPage extends FormPage
 	 * @var boolean used to add changelog tab
 	 */
 	protected $add_changelog_tab = false;
+	/**
+	 * @var boolean used to enable/disable ajax for switch options
+	 */
+	protected $use_ajax_to_switch_on_off = false;
 
 
 	/**
@@ -122,6 +127,7 @@ class SetupPage extends FormPage
 	 * @param    $link       Link href
 	 * @param    $label      Link label
 	 * @param    $enable     Condition to enable
+	 * @return   $this
 	 */
 	public function setTitleLink($link, $label, $enable = '$user->admin')
 	{
@@ -130,16 +136,21 @@ class SetupPage extends FormPage
 		if (empty($enable) || verifCond($enable)) {
 			$this->title_link = '<a href="'.$link.'">'.$langs->trans($label).'</a>';
 		}
+
+		return $this;
 	}
 
 	/**
 	 * Set Document model(s) preview picture
 	 *
 	 * @param    $picture     Document model preview picture
+	 * @return   $this
 	 */
 	public function setDocModelPreviewPicture($picture)
 	{
 		$this->doc_model_preview_picture = $picture;
+
+		return $this;
 	}
 
 	/**
@@ -159,13 +170,10 @@ class SetupPage extends FormPage
 			$action = GETPOST('action', 'alpha');
 
 			// Actions
-			if (preg_match('/set_(.*)/', $action, $reg))
+			if (preg_match('/^set_(.*)/', $action, $reg))
 			{
 				$code = $reg[1];
-				$value = GETPOST($code);
-				if (! is_submitted($code)) {
-					$value = 1;
-				}
+				$value = (is_submitted($code) ? GETPOST($code) : 1);
 
 				if (dolibarr_set_const($db, $code, $value, 'chaine', 0, '', $conf->entity) > 0)
 				{
@@ -177,10 +185,10 @@ class SetupPage extends FormPage
 				}
 			}
 
-			else if (preg_match('/del_(.*)/', $action, $reg))
+			else if (preg_match('/^del_(.*)/', $action, $reg))
 			{
 				$code = $reg[1];
-				
+
 				if (dolibarr_del_const($db, $code, $conf->entity) > 0)
 				{
 					dolibase_redirect($_SERVER["PHP_SELF"].'?mainmenu=home');
@@ -377,20 +385,36 @@ class SetupPage extends FormPage
 	}
 
 	/**
+	 * Set $use_ajax_to_switch_on_off attribute to true
+	 *
+	 * @return   $this
+	 */
+	public function useAjaxToSwitchOnOff()
+	{
+		$this->use_ajax_to_switch_on_off = true;
+
+		return $this;
+	}
+
+	/**
 	 * Show setup_not_available template (only once)
 	 *
+	 * @return   $this
 	 */
 	public function setupNotAvailable()
 	{
 		$template_path = dolibase_buildpath('core/tpl/setup_not_available.php');
 
 		$this->showTemplate($template_path, true, true);
+
+		return $this;
 	}
 
 	/**
 	 * Create a new table for options
 	 *
 	 * @param     $first_column_name     First column name
+	 * @return    $this
 	 */
 	public function newOptionsTable($first_column_name = 'Option')
 	{
@@ -400,6 +424,8 @@ class SetupPage extends FormPage
 							);
 
 		$this->openTable($options_table_cols);
+
+		return $this;
 	}
 
 	/**
@@ -411,6 +437,7 @@ class SetupPage extends FormPage
 	 * @param     $morehtmlright     more HTML to add on the right of the option description
 	 * @param     $width             Option last column/td width
 	 * @param     $form_enctype      Form enctype attribute
+	 * @return    $this
 	 */
 	public function addOption($option_desc, $option_content, $const_name = '', $morehtmlright = '', $width = 300, $form_enctype = '')
 	{
@@ -430,6 +457,8 @@ class SetupPage extends FormPage
 			echo '&nbsp;&nbsp;<input type="submit" class="button" value="'.$langs->trans("Modify").'">&nbsp;&nbsp;'."\n";
 		}
 		echo "</form>\n</td>\n</tr>\n";
+
+		return $this;
 	}
 
 	/**
@@ -439,6 +468,7 @@ class SetupPage extends FormPage
 	 * @param     $const_name        Option constant name
 	 * @param     $disabled          disable option or not
 	 * @param     $morehtmlright     more HTML to add on the right of the option description
+	 * @return    $this
 	 */
 	public function addSwitchOption($option_desc, $const_name, $disabled = false, $morehtmlright = '')
 	{
@@ -449,15 +479,24 @@ class SetupPage extends FormPage
 
 		echo '<tr '.$bc[$this->odd].'><td'.$more_attr.'>'.$langs->trans($option_desc).$morehtmlright.'</td>'."\n";
 		echo '<td'.$more_attr.' align="right">'."\n";
-		if (empty($conf->global->$const_name))
+		if ($this->use_ajax_to_switch_on_off && ! empty($conf->use_javascript_ajax) && function_exists('ajax_constantonoff'))
 		{
-			echo '<a href="'.$_SERVER['PHP_SELF'].'?action=set_'.$const_name.'&amp;'.$const_name.'=1">'.img_picto($langs->trans("Disabled"),'switch_off').'</a>'."\n";
+			echo ajax_constantonoff($const_name);
 		}
 		else
 		{
-			echo '<a href="'.$_SERVER['PHP_SELF'].'?action=set_'.$const_name.'&amp;'.$const_name.'=0">'.img_picto($langs->trans("Enabled"),'switch_on').'</a>'."\n";
+			if (empty($conf->global->$const_name))
+			{
+				echo '<a href="'.$_SERVER['PHP_SELF'].'?action=set_'.$const_name.'">'.img_picto($langs->trans("Disabled"), 'switch_off').'</a>'."\n";
+			}
+			else
+			{
+				echo '<a href="'.$_SERVER['PHP_SELF'].'?action=del_'.$const_name.'">'.img_picto($langs->trans("Enabled"), 'switch_on').'</a>'."\n";
+			}
 		}
 		echo "&nbsp;&nbsp;&nbsp;&nbsp;</td>\n</tr>\n";
+
+		return $this;
 	}
 
 	/**
@@ -468,6 +507,7 @@ class SetupPage extends FormPage
 	 * @param     $morehtmlright     more HTML to add on the right of the option description
 	 * @param     $size              Option textbox size
 	 * @param     $width             Option last column/td width
+	 * @return    $this
 	 */
 	public function addTextOption($option_desc, $const_name, $morehtmlright = '', $size = 16, $width = 300)
 	{
@@ -476,6 +516,8 @@ class SetupPage extends FormPage
 		$option_content = $this->form->textInput($const_name, $conf->global->$const_name, $size);
 
 		$this->addOption($option_desc, $option_content, $const_name, $morehtmlright, $width);
+
+		return $this;
 	}
 
 	/**
@@ -487,6 +529,7 @@ class SetupPage extends FormPage
 	 * @param     $max               Option maximum number
 	 * @param     $morehtmlright     more HTML to add on the right of the option description
 	 * @param     $width             Option last column/td width
+	 * @return    $this
 	 */
 	public function addNumberOption($option_desc, $const_name, $min = 0, $max = 100, $morehtmlright = '', $width = 300)
 	{
@@ -495,6 +538,8 @@ class SetupPage extends FormPage
 		$option_content = $this->form->numberInput($const_name, $conf->global->$const_name, $min, $max);
 
 		$this->addOption($option_desc, $option_content, $const_name, $morehtmlright, $width);
+
+		return $this;
 	}
 
 	/**
@@ -506,6 +551,7 @@ class SetupPage extends FormPage
 	 * @param     $max               Option maximum value
 	 * @param     $morehtmlright     more HTML to add on the right of the option description
 	 * @param     $width             Option last column/td width
+	 * @return    $this
 	 */
 	public function addRangeOption($option_desc, $const_name, $min = 0, $max = 100, $morehtmlright = '', $width = 300)
 	{
@@ -514,6 +560,8 @@ class SetupPage extends FormPage
 		$option_content = $this->form->rangeInput($const_name, $conf->global->$const_name, $min, $max);
 
 		$this->addOption($option_desc, $option_content, $const_name, $morehtmlright, $width);
+
+		return $this;
 	}
 
 	/**
@@ -524,6 +572,7 @@ class SetupPage extends FormPage
 	 * @param     $list              Options list array
 	 * @param     $morehtmlright     more HTML to add on the right of the option description
 	 * @param     $width             Option last column/td width
+	 * @return    $this
 	 */
 	public function addListOption($option_desc, $const_name, $list, $morehtmlright = '', $width = 300)
 	{
@@ -532,6 +581,8 @@ class SetupPage extends FormPage
 		$option_content = $this->form->listInput($const_name, $list, $conf->global->$const_name);
 
 		$this->addOption($option_desc, $option_content, $const_name, $morehtmlright, $width);
+
+		return $this;
 	}
 
 	/**
@@ -541,6 +592,7 @@ class SetupPage extends FormPage
 	 * @param     $const_name        Option constant name
 	 * @param     $morehtmlright     more HTML to add on the right of the option description
 	 * @param     $width             Option last column/td width
+	 * @return    $this
 	 */
 	public function addColorOption($option_desc, $const_name, $morehtmlright = '', $width = 300)
 	{
@@ -549,6 +601,8 @@ class SetupPage extends FormPage
 		$option_content = $this->form->colorInput($const_name, $conf->global->$const_name);
 
 		$this->addOption($option_desc, $option_content, $const_name, $morehtmlright, $width);
+
+		return $this;
 	}
 
 	/**
@@ -559,6 +613,7 @@ class SetupPage extends FormPage
 	 * @param     $target               button target
 	 * @param     $class                button class
 	 * @param     $close_parent_div     should close parent div or not
+	 * @return    $this
 	 */
 	public function addButton($name, $href = '#', $target = '_self', $class = 'butAction', $close_parent_div = false)
 	{
@@ -576,12 +631,15 @@ class SetupPage extends FormPage
 			echo '</div>';
 			$this->close_buttons_div = false;
 		}
+
+		return $this;
 	}
 
 	/**
 	 * Print numbering models
 	 *
 	 * @param     $model_name     Numbering model name
+	 * @return    $this
 	 */
 	public function printNumModels($model_name = '')
 	{
@@ -685,11 +743,14 @@ class SetupPage extends FormPage
 		}
 
 		echo "</table><br>\n";
+
+		return $this;
 	}
 
 	/**
 	 * Print document models
 	 *
+	 * @return    $this
 	 */
 	public function printDocModels()
 	{
@@ -834,5 +895,7 @@ class SetupPage extends FormPage
 		}
 
 		echo "</table><br>\n";
+
+		return $this;
 	}
 }

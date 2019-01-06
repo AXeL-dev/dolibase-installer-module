@@ -174,6 +174,36 @@ if (! function_exists('GETPOSTDATE'))
 }
 
 /**
+ * Return posted datetime
+ *
+ * @since      2.9.4
+ * @param      $datetime_input_name   datetime input name
+ * @param      $convert_to_db_format  should convert the datetime to database format or not
+ * @return     string                 datetime in your db format, null if error/empty
+ */
+if (! function_exists('GETPOSTDATETIME'))
+{
+	function GETPOSTDATETIME($datetime_input_name, $convert_to_db_format = false)
+	{
+		if (is_submitted($datetime_input_name.'hour') && is_submitted($datetime_input_name.'min') && is_submitted($datetime_input_name.'month') && is_submitted($datetime_input_name.'day') && is_submitted($datetime_input_name.'year')) {
+			$date = dol_mktime(GETPOST($datetime_input_name.'hour'), GETPOST($datetime_input_name.'min'), 0, GETPOST($datetime_input_name.'month'), GETPOST($datetime_input_name.'day'), GETPOST($datetime_input_name.'year'));
+		}
+		else {
+			$date = GETPOST($datetime_input_name);
+		}
+
+		if ($convert_to_db_format) {
+			global $db;
+
+			return empty($date) ? null : $db->idate($date);
+		}
+		else {
+			return $date;
+		}
+	}
+}
+
+/**
  * Convert empty values to null
  *
  * @param      $value          value to convert
@@ -548,5 +578,67 @@ if (! function_exists('array_match'))
 		}
 
 		return 0;
+	}
+}
+
+/**
+ * Converts an array values to string separated by a delimiter
+ *
+ * @since     2.9.3
+ * @param     $array     Array
+ * @param     $delimiter Values delimiter
+ * @return    string     array values string separated by the delimiter or empty string if array is empty
+ */
+if (! function_exists('array_to_string'))
+{
+	function array_to_string($array, $delimiter = ',')
+	{
+		return (is_array($array) && ! empty($array) ? join($delimiter, $array) : '');
+	}
+}
+
+/**
+ * Converts a string into an array using a delimiter to separate/get the values
+ *
+ * @since     2.9.3
+ * @param     $str       String
+ * @param     $delimiter Values delimiter
+ * @param     $trim      Trim array values or not
+ * @return    array      array filled with values from string or empty array if string is empty
+ */
+if (! function_exists('string_to_array'))
+{
+	function string_to_array($str, $delimiter = ',', $trim = true)
+	{
+		$arr = array();
+
+		if (! empty($str))
+		{
+			$arr = explode($delimiter, $str);
+
+			if ($trim) {
+				foreach ($arr as $key => $value) {
+					$arr[$key] = trim($value);
+				}
+			}
+		}
+
+		return $arr;
+	}
+}
+
+/**
+ * Returns if javascript/jquery is enabled
+ *
+ * @since     2.9.3
+ * @return    boolean    true if javascript is enabled, else false
+ */
+if (! function_exists('js_enabled'))
+{
+	function js_enabled()
+	{
+		global $conf;
+
+		return (! empty($conf->use_javascript_ajax) && empty($conf->dol_use_jmobile));
 	}
 }

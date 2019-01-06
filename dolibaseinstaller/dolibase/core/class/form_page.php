@@ -218,15 +218,21 @@ class FormPage extends Page
 	 * @param     $question           Message question / content
 	 * @param     $action             Action to do after confirmation
 	 * @param     $question_param     Question parameter
+	 * @param     $dialog_id_suffix   Dialog id suffix (used to show the dialog without reloading the page)
 	 * @return    $this
 	 */
-	public function askForConfirmation($url, $title, $question, $action, $question_param = '')
+	public function askForConfirmation($url, $title, $question, $action, $question_param = '', $dialog_id_suffix = '')
 	{
 		global $langs, $dolibase_config;
 
-		$use_ajax = $dolibase_config['main']['use_ajax_on_confirm'] ? 1 : 0;
+		if (! empty($dialog_id_suffix)) {
+			$use_ajax = $dialog_id_suffix;
+		}
+		else {
+			$use_ajax = $dolibase_config['main']['use_ajax_on_confirm'] ? 1 : 0;
+		}
 
-		$this->body = $this->form->formconfirm($url, $langs->trans($title), $langs->trans($question, $question_param), $action, '', '', $use_ajax);
+		$this->body.= $this->form->formconfirm($url, $langs->trans($title), $langs->trans($question, $question_param), $action, '', '', $use_ajax);
 
 		return $this;
 	}
@@ -239,7 +245,7 @@ class FormPage extends Page
 	 */
 	public function appendToBody($content)
 	{
-		$this->body = $content;
+		$this->body.= $content;
 
 		return $this;
 	}

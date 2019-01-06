@@ -130,7 +130,7 @@ class CustomForm extends Form
 	 */
 	public function rangeInput($name, $value, $min = 0, $max = 100)
 	{
-		return '<input type="range" min="'.$min.'" max="'.$max.'" class="flat" name="'.$name.'" value="'.$value.'">';
+		return '<input type="range" min="'.$min.'" max="'.$max.'" class="flat valignmiddle" name="'.$name.'" value="'.$value.'">';
 	}
 
 	/**
@@ -144,6 +144,20 @@ class CustomForm extends Form
 	public function dateInput($name, $value, $addnowlink = 1)
 	{
 		return $this->select_date($value, $name, 0, 0, 1, '', 1, $addnowlink, 1);
+	}
+
+	/**
+	 * Return a datetime input
+	 *
+	 * @since   2.9.4
+	 * @param   $name         input name
+	 * @param   $value        input value
+	 * @param   $addnowlink   add now link
+	 * @return  string        input HTML
+	 */
+	public function datetimeInput($name, $value, $addnowlink = 1)
+	{
+		return $this->select_date($value, $name, 1, 1, 1, '', 1, $addnowlink, 1);
 	}
 
 	/**
@@ -164,7 +178,7 @@ class CustomForm extends Form
 			$values[$key] = $langs->trans($value);
 		}
 
-		return $this->selectarray($name, $values, $selected, $show_empty);
+		return $this->selectarray($name, $values, $selected, $show_empty, 0, 0, '', 0, 0, 0, '', 'dolibase_select');
 	}
 
 	/**
