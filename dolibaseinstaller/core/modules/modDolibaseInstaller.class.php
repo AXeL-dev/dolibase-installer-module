@@ -1,10 +1,10 @@
 <?php
 
 // Load Dolibase
-dol_include_once('/dolibaseinstaller/autoload.php');
+dol_include_once('dolibaseinstaller/autoload.php');
 
 // Load Dolibase Module class
-dolibase_include_once('/core/class/module.php');
+dol_include_once('dolibaseinstaller/class/module.php');
 
 // Load Dolibarr files lib
 require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
@@ -12,7 +12,7 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
 /**
  *	Class to describe and enable module
  */
-class modDolibaseInstaller extends DolibaseModule
+class modDolibaseInstaller extends DolibaseModuleTwoNineFour
 {
 	/**
 	 * Function called when module is enabled.
