@@ -169,11 +169,20 @@ class SetupPage extends FormPage
 			// Parameters
 			$action = GETPOST('action', 'alpha');
 
-			// Actions
+			/**
+			 * Actions
+			 */
+
+			// Set a constant
 			if (preg_match('/^set_(.*)/', $action, $reg))
 			{
 				$code = $reg[1];
-				$value = (is_submitted($code) ? GETPOST($code) : 1);
+				$type = GETPOST('option_type', 'alpha');
+				$value = (is_submitted($code) ? GETPOST($code) : (in_array($type, array('text', 'multiselect')) ? '' : 1));
+
+				if (is_array($value)) {
+					$value = array_to_string($value);
+				}
 
 				if (dolibarr_set_const($db, $code, $value, 'chaine', 0, '', $conf->entity) > 0)
 				{
@@ -185,6 +194,7 @@ class SetupPage extends FormPage
 				}
 			}
 
+			// Delete a constant
 			else if (preg_match('/^del_(.*)/', $action, $reg))
 			{
 				$code = $reg[1];
@@ -199,6 +209,7 @@ class SetupPage extends FormPage
 				}
 			}
 
+			// Update numbering model mask
 			else if ($action == 'updateMask')
 			{
 				$maskconst = GETPOST('maskconst','alpha');
@@ -219,6 +230,7 @@ class SetupPage extends FormPage
 				}
 			}
 
+			// Set/Activate a numbering model
 			else if ($action == 'setmod')
 			{
 				$value = GETPOST('value', 'alpha');
@@ -266,7 +278,7 @@ class SetupPage extends FormPage
 				}
 			}
 
-			// specimen
+			// Generate specimen document
 			else if ($action == 'specimen')
 			{
 				$model = GETPOST('model','alpha');
@@ -419,9 +431,9 @@ class SetupPage extends FormPage
 	public function newOptionsTable($first_column_name = 'Option')
 	{
 		$options_table_cols = array(
-								array('name' => $first_column_name),
-								array('name' => 'Value', 'attr' => 'align="center" width="100"')
-							);
+			array('name' => $first_column_name),
+			array('name' => 'Value', 'attr' => 'align="center" width="100"')
+		);
 
 		$this->openTable($options_table_cols);
 
@@ -579,6 +591,31 @@ class SetupPage extends FormPage
 		global $conf;
 
 		$option_content = $this->form->listInput($const_name, $list, $conf->global->$const_name);
+
+		$this->addOption($option_desc, $option_content, $const_name, $morehtmlright, $width);
+
+		return $this;
+	}
+
+	/**
+	 * Add a new multi select list option
+	 *
+	 * @since     2.9.5
+	 * @param     $option_desc       Option description
+	 * @param     $const_name        Option constant name
+	 * @param     $list              Options list array
+	 * @param     $morehtmlright     more HTML to add on the right of the option description
+	 * @param     $width             Option last column/td width
+	 * @return    $this
+	 */
+	public function addMultiSelectListOption($option_desc, $const_name, $list, $morehtmlright = '', $width = 300)
+	{
+		global $conf;
+
+		$selected = string_to_array($conf->global->$const_name);
+
+		$option_content = '<input type="hidden" name="option_type" value="multiselect" />'."\n";
+		$option_content.= $this->form->multiSelectListInput($const_name, $list, $selected, false, '60%');
 
 		$this->addOption($option_desc, $option_content, $const_name, $morehtmlright, $width);
 
