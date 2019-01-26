@@ -31,7 +31,32 @@ if (! function_exists('compare_version'))
 		$version_digits = explode('.', $version);
 		$version_to_digits = explode('.', $version_to);
 
-		if ($sign == '>' || $sign == '>=')
+		if (! in_array($sign, array('>', '>=', '<', '<=')))
+		{
+			dolibase_error('Wrong sign='.$sign.' provided to '.__FUNCTION__, true);
+		}
+
+		// 1st - try using built-in dolibarr function
+		else if (function_exists('versioncompare'))
+		{
+			$result = versioncompare($version_digits, $version_to_digits);
+
+			if ($sign == '>') {
+				return ($result > 0);
+			}
+			else if ($sign == '>=') {
+				return ($result >= 0);
+			}
+			else if ($sign == '<') {
+				return ($result < 0);
+			}
+			else if ($sign == '<=') {
+				return ($result <= 0);
+			}
+		}
+
+		// 2nd - try using dolibase own implementation
+		else if ($sign == '>' || $sign == '>=')
 		{
 			$greater_than = $version_digits[0] > $version_to_digits[0] || 
 			(isset($version_to_digits[1]) && $version_digits[0] == $version_to_digits[0] && $version_digits[1] > $version_to_digits[1]) || 
@@ -46,10 +71,6 @@ if (! function_exists('compare_version'))
 			(isset($version_to_digits[2]) && $version_digits[0] == $version_to_digits[0] && $version_digits[1] == $version_to_digits[1] && $version_digits[2] < $version_to_digits[2]) ? true : false;
 
 			return ($sign == '<=' ? (($version == $version_to) || $lesser_than) : $lesser_than);
-		}
-		else
-		{
-			dolibase_error('Wrong sign='.$sign.' provided to '.__FUNCTION__, true);
 		}
 	}
 }
@@ -390,12 +411,12 @@ if (! function_exists('dolibase_error'))
 {
 	function dolibase_error($error, $die = false)
 	{
-		$error_prefix = 'DolibaseError: ';
+		$error_message = 'DolibaseError: '.$error;
 
 		if ($die) {
-			die($error_prefix.$error);
+			die($error_message);
 		} else {
-			dol_print_error('', $error_prefix.$error);
+			dol_print_error('', $error_message);
 		}
 	}
 }
@@ -469,7 +490,8 @@ if (! function_exists('start_time_measure'))
 	{
 		global $debugbar;
 
-		if (is_object($debugbar)) {
+		if (is_object($debugbar))
+		{
 			if (! empty($stop_name)) {
 				stop_time_measure($stop_name);
 			}
@@ -572,7 +594,8 @@ if (! function_exists('array_match'))
 {
 	function array_match($pattern, $array, &$matches)
 	{
-		foreach ($array as $value) {
+		foreach ($array as $value)
+		{
 			$result = preg_match($pattern, $value, $matches);
 			if ($result) {
 				return $result;
