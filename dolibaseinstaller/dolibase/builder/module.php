@@ -61,6 +61,9 @@ if ($action == 'generate')
 		'num_model_field' => getPostData('num_model_field'),
 		'num_model_prefix' => getPostData('num_model_prefix')
 	);
+	$translations = getPostData('translations');
+	$default_translations = array('en_US');
+	$translations = is_array($translations) ? array_merge($default_translations, $translations) : $default_translations;
 
 	// Create module folder & sub-folders
 	$root = getDolibarrRootDirectory();
@@ -72,11 +75,12 @@ if ($action == 'generate')
 		'css',
 		'js',
 		'img',
-		'langs/en_US',
-		'langs/fr_FR',
 		'sql',
 		'tpl'
 	);
+	foreach ($translations as $translation_name) {
+		$module_sub_folders[] = 'langs/'.$translation_name;
+	}
 
 	if (! mkdir_r($module_sub_folders, 0777, $module_path))
 	{
@@ -240,18 +244,19 @@ if ($action == 'generate')
 		file_put_contents($module_path.'/core/modules/mod'.$module_class_data['module_class_name'].'.class.php', $module_class_template);
 
 		// Create langs files
-		$lang_data = array(
-			'module_name' => strtoupper($module_name),
-			'current_year' => date('Y'),
-			'author_name' => $data['author_name'],
-			'module_name_translation' => 'Module'.$data['number'].'Name = '.$module_name,
-			'module_desc_translation' => 'Module'.$data['number'].'Desc = '.$module_name,
-			'permissions_translation' => $perms_translation
-		);
-		$english_template = getTemplate(__DIR__ . '/tpl/module/en_US.lang', $lang_data);
-		file_put_contents($module_path.'/langs/en_US/'.$data['folder'].'.lang', $english_template);
-		$french_template = getTemplate(__DIR__ . '/tpl/module/fr_FR.lang', $lang_data);
-		file_put_contents($module_path.'/langs/fr_FR/'.$data['folder'].'.lang', $french_template);
+		foreach ($translations as $translation_name) {
+			$lang_data = array(
+				'module_name' => strtoupper($module_name),
+				'translation_name' => $translation_name,
+				'current_year' => date('Y'),
+				'author_name' => $data['author_name'],
+				'module_name_translation' => 'Module'.$data['number'].'Name = '.$module_name,
+				'module_desc_translation' => 'Module'.$data['number'].'Desc = '.$module_name,
+				'permissions_translation' => $perms_translation
+			);
+			$translation_template = getTemplate(__DIR__ . '/tpl/module/translation.lang', $lang_data);
+			file_put_contents($module_path.'/langs/'.$translation_name.'/'.$data['folder'].'.lang', $translation_template);
+		}
 
 		// Add a copy of dolibase
 		$dolibase_filter = array(
@@ -323,7 +328,7 @@ if ($action == 'generate')
 		}
 		recurse_copy($root.'/dolibase', $module_path.'/dolibase', $dolibase_filter, $dolibase_include_only);
 		if ($use_lite_dolibase) {
-			file_replace_contents($module_path.'/dolibase/config.php', '\'version\'(\s+)=> \'(.*)\'', '\'version\'$1=> \'$2-lite\''); // add '-lite' string to dolibase version in config file
+			file_replace_contents($module_path.'/dolibase/config.php', '\'version\'(\s+)=> \'(.*?)\'', '\'version\'$1=> \'$2-lite\''); // add '-lite' string to dolibase version in config file
 		}
 
 		// Set files/folders permissions
