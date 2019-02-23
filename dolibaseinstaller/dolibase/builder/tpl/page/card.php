@@ -1,7 +1,7 @@
 <?php
 
 // Load Dolibase
-include_once 'autoload.php';
+require_once 'autoload.php';
 
 // Load Dolibase Page class
 dolibase_include_once('core/pages/card.php');
@@ -24,8 +24,9 @@ $model = GETPOST('model', 'alpha');
 ${object_init}
 
 // Set fields
-// $fields[] = new Field(...);
-// $page->setFields($fields);
+//$page->setFields(array(
+//	new Field(...)
+//));
 
 // Fetch object
 if (($id > 0 || ! empty($ref)) && $object->fetch($id, $ref))
