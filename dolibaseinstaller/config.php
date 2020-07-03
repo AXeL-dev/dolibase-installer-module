@@ -23,7 +23,7 @@ $dolibase_config['module'] = array(
 	'depends'         => array(),
 	'required_by'     => array(),
 	'conflit_with'    => array(),
-	'check_updates'   => true,
+	'check_updates'   => false,
 	'enable_logs'     => false,
 	'enable_triggers' => false
 );
